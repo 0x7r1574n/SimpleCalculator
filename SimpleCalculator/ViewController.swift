@@ -38,8 +38,8 @@ class ViewController: UIViewController {
         if isInteger(double) {
             return String(Int(double))
         } else {
-            // round to 8 digits precision if necessary
-            return String(Double(round(1e8 * double) / 1e8))
+            // round to 5 digits precision if necessary
+            return String(Double(round(1e5 * double) / 1e5))
         }
     }
     
