@@ -13,7 +13,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var numberDisplay: UILabel!
     var previous: Double = 0
     var hasOperationPressed: Bool = false
-    var currentOperation: String?
+    var currentOperation: String = ""
+    var inventory: [String] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,12 +39,16 @@ class ViewController: UIViewController {
             return String(Int(double))
         } else {
             // round to 8 digits precision if necessary
-            return String(Double(round(1e8*double)/1e8))
+            return String(Double(round(1e8 * double) / 1e8))
         }
     }
     
+    func factorial(n: Double) -> Double {
+        return n == 0 ? 1.0 : n * factorial(n - 1.0)
+    }
+    
     func displayAnswer() -> Void {
-        switch currentOperation! {
+        switch currentOperation {
         case "+":
             previous = previous + convert(numberDisplay.text!)
         case "−":
@@ -63,22 +68,25 @@ class ViewController: UIViewController {
     @IBAction func numberPressed(sender: UIButton) {
         let digit = sender.currentTitle
         let currentNumber = numberDisplay.text
-        
-        if digit != "." && currentNumber == "0" {
-            numberDisplay.text = digit
-        }
-        else if hasOperationPressed || (currentNumber == "0") {
-            numberDisplay.text = digit
-            hasOperationPressed = false
-        }
-        else if currentNumber!.rangeOfString(".") != nil && digit == "." {
-            numberDisplay.text = numberDisplay.text
-        }
-        else if digit == "." && (hasOperationPressed || currentNumber == "0") {
-            numberDisplay.text = "0."
-        }
-        else {
-            numberDisplay.text = currentNumber! + digit!
+        switch digit! {
+        case ".":
+            if currentNumber == "0" || hasOperationPressed {
+                numberDisplay.text = "0."
+                hasOperationPressed = false
+            }
+            else if currentNumber!.rangeOfString(".") != nil {
+                numberDisplay.text = numberDisplay.text
+            }
+            else {
+                numberDisplay.text = currentNumber! + digit!
+            }
+        default:
+            if currentNumber == "0" || hasOperationPressed {
+                numberDisplay.text = digit
+                hasOperationPressed = false
+            } else {
+                numberDisplay.text = currentNumber! + digit!
+            }
         }
     }
 
@@ -90,35 +98,92 @@ class ViewController: UIViewController {
     
     @IBAction func operationPressed(sender: UIButton) {
         let operation = sender.currentTitle!
-        if previous == 0 {
-            previous = convert(numberDisplay.text!)
-        } else {
-            displayAnswer()
-        }
+
         switch operation {
         case "+":
+            if previous == 0 {
+                previous = convert(numberDisplay.text!)
+            } else {
+                displayAnswer()
+            }
             currentOperation = "+"
             hasOperationPressed = true
         case "−":
+            if previous == 0 {
+                previous = convert(numberDisplay.text!)
+            } else {
+                displayAnswer()
+            }
             currentOperation = "−"
             hasOperationPressed = true
         case "×":
+            if previous == 0 {
+                previous = convert(numberDisplay.text!)
+            } else {
+                displayAnswer()
+            }
             currentOperation = "×"
             hasOperationPressed = true
         case "÷":
+            if previous == 0 {
+                previous = convert(numberDisplay.text!)
+            } else {
+                displayAnswer()
+            }
             currentOperation = "÷"
             hasOperationPressed = true
         case "%":
+            if previous == 0 {
+                previous = convert(numberDisplay.text!)
+            } else {
+                displayAnswer()
+            }
             currentOperation = "%"
             hasOperationPressed = true
+        case "CNT":
+            currentOperation = "CNT"
+            inventory.append(numberDisplay.text!)
+            hasOperationPressed = true
+        case "AVG":
+            currentOperation = "AVG"
+            inventory.append(numberDisplay.text!)
+            hasOperationPressed = true
+        case "!":
+            previous = convert(numberDisplay.text!)
+            if previous > 20 {
+                numberDisplay.text = "0"
+            } else {
+                numberDisplay.text = properNumberType(factorial(previous))
+            }
+            previous = 0
+            currentOperation = ""
         default:
             break
         }
     }
     
     @IBAction func getAnswer(sender: UIButton) {
-        displayAnswer()
+        switch currentOperation {
+        case "CNT":
+            inventory.append(numberDisplay.text!)
+            numberDisplay.text = String(inventory.count)
+            currentOperation = ""
+        case "AVG":
+            inventory.append(numberDisplay.text!)
+            var sum = convert(inventory[0])
+            for var i = 1; i < inventory.count; i++ {
+                sum += convert(inventory[i])
+            }
+            let result = sum / Double(inventory.count)
+            numberDisplay.text = properNumberType(result)
+            currentOperation = ""
+        case "+", "−", "×", "÷", "%":
+            displayAnswer()
+        default:
+            break
+        }
         previous = 0
+        inventory.removeAll()
     }
 }
 
